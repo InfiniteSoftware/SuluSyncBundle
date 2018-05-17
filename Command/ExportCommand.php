@@ -5,6 +5,7 @@ namespace Fusonic\SuluSyncBundle\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -52,14 +53,19 @@ class ExportCommand extends Command
         $this->databaseName = $databaseName;
         $this->databasePassword = $databasePassword;
         $this->kernelRootDir = $kernelRootDir;
-        $this->exportDirectory = $kernelRootDir . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "web";
     }
 
     protected function configure()
     {
         $this
             ->setName("sulu:export")
-            ->setDescription("Exports all Sulu contents (PHPCR, database, uploads) to the web directory.");
+            ->setDescription("Exports all Sulu contents (PHPCR, database, uploads) to the chosen project directory.")
+            ->setHelp('This command allows you to export all Sulu contents')
+            ->addArgument(
+                'dir',
+                InputArgument::REQUIRED,
+                'Dump directory'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -69,6 +75,8 @@ class ExportCommand extends Command
 
         $this->progressBar = new ProgressBar($this->output, 3);
         $this->progressBar->setFormat("%current%/%max% [%bar%] %percent:3s%% <info>%message%</info>");
+
+        $this->exportDirectory = $this->kernelRootDir . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . $input->getArgument("dir");
 
         $this->exportPHPCR();
         $this->exportDatabase();
