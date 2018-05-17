@@ -1,5 +1,5 @@
 {
-    "name": "fusonic/sulu-sync",
+    "name": "pawel-wasiliuk/sulu-sync",
     "description": "Sync contents between two Sulu systems.",
     "authors": [
         {
@@ -12,6 +12,6 @@
         "symfony/process": "^2.8 || ^3.2"
     },
     "autoload": {
-        "psr-4": {"Fusonic\\SuluSyncBundle\\": ""}
+        "psr-4": {"pawel-wasiliuk\\SuluSyncBundle\\": ""}
     }
 }
