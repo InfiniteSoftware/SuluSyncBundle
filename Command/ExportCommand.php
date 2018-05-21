@@ -67,6 +67,11 @@ class ExportCommand extends Command
                 InputArgument::REQUIRED,
                 'Dump directory'
             )
+            ->addArgument(
+                'export_msg',
+                InputArgument::REQUIRED,
+                'Export content message'
+            )
             ->addOption(
                 "export-assets",
                 null,
@@ -92,6 +97,8 @@ class ExportCommand extends Command
         if ($exportAssets) {
             $this->exportUploads();
         }
+
+        $this->logExport($input->getArgument("export_msg"));
 
         $this->progressBar->finish();
 
@@ -148,6 +155,19 @@ class ExportCommand extends Command
         $process->run();
         $this->progressBar->advance();
 
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+    }
+
+    private function logExport($message)
+    {
+        $this->progressBar->setMessage("Logging export statement...");
+        $command =
+            "echo " . $this->timestampString . ': ' . $message . '\r\n >> ' . $this->exportDirectory . DIRECTORY_SEPARATOR . 'export_logs.log';
+        $process = new Process($command);
+        $process->run();
+        $this->progressBar->advance();
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
