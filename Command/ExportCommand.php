@@ -164,7 +164,7 @@ class ExportCommand extends Command
     {
         $this->progressBar->setMessage("Logging export statement...");
         $command =
-            "echo " . $this->timestampString . ': ' . $message . '\r\n >> ' . $this->exportDirectory . DIRECTORY_SEPARATOR . 'export_logs.log';
+            "echo " . $this->timestampString . ': ' . $message . ' >> ' . $this->exportDirectory . DIRECTORY_SEPARATOR . 'export_logs.log';
         $process = new Process($command);
         $process->run();
         $this->progressBar->advance();
