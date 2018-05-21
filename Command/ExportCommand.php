@@ -29,7 +29,7 @@ class ExportCommand extends Command
      */
     private $progressBar;
 
-    private $secret;
+    private $timestampString;
     private $databaseHost;
     private $databaseUser;
     private $databaseName;
@@ -38,7 +38,6 @@ class ExportCommand extends Command
     private $exportDirectory;
 
     public function __construct(
-        $secret,
         $databaseHost,
         $databaseName,
         $databaseUser,
@@ -47,7 +46,9 @@ class ExportCommand extends Command
     ) {
         parent::__construct();
 
-        $this->secret = $secret;
+        $dt = new \DateTime('NOW');
+        $this->timestampString = $dt->format('Y-m-d-H-i-s');
+
         $this->databaseHost = $databaseHost;
         $this->databaseUser = $databaseUser;
         $this->databaseName = $databaseName;
@@ -65,6 +66,12 @@ class ExportCommand extends Command
                 'dir',
                 InputArgument::REQUIRED,
                 'Dump directory'
+            )
+            ->addOption(
+                "export-assets",
+                null,
+                null,
+                "Skip the download of assets."
             );
     }
 
@@ -72,6 +79,7 @@ class ExportCommand extends Command
     {
         $this->input = $input;
         $this->output = $output;
+        $exportAssets = $this->input->getOption("export-assets");
 
         $this->progressBar = new ProgressBar($this->output, 3);
         $this->progressBar->setFormat("%current%/%max% [%bar%] %percent:3s%% <info>%message%</info>");
@@ -80,7 +88,11 @@ class ExportCommand extends Command
 
         $this->exportPHPCR();
         $this->exportDatabase();
-        $this->exportUploads();
+
+        if ($exportAssets) {
+            $this->exportUploads();
+        }
+
         $this->progressBar->finish();
 
         $this->output->writeln(
@@ -95,7 +107,7 @@ class ExportCommand extends Command
             "doctrine:phpcr:workspace:export",
             [
                 "-p" => "/cmf",
-                "filename" => $this->exportDirectory . DIRECTORY_SEPARATOR . "{$this->secret}.phpcr"
+                "filename" => $this->exportDirectory . DIRECTORY_SEPARATOR . "{$this->timestampString}.phpcr"
             ]
         );
         $this->progressBar->advance();
@@ -107,7 +119,7 @@ class ExportCommand extends Command
         $command =
             "mysqldump -h {$this->databaseHost} -u " . escapeshellarg($this->databaseUser) .
             ($this->databasePassword ? " -p" . escapeshellarg($this->databasePassword) : "") .
-            " " . escapeshellarg($this->databaseName) . " > " . $this->exportDirectory . DIRECTORY_SEPARATOR . "{$this->secret}.sql";
+            " " . escapeshellarg($this->databaseName) . " > " . $this->exportDirectory . DIRECTORY_SEPARATOR . "{$this->timestampString}.sql";
 
         $process = new Process($command);
         $process->run();
@@ -130,7 +142,7 @@ class ExportCommand extends Command
         }
 
         $process = new Process(
-            "tar cvf " . $this->exportDirectory . DIRECTORY_SEPARATOR . $this->secret . ".tar.gz {$exportPath}"
+            "tar cvf " . $this->exportDirectory . DIRECTORY_SEPARATOR . $this->timestampString . ".tar.gz {$exportPath}"
         );
         $process->setTimeout(300);
         $process->run();
