@@ -69,7 +69,14 @@ class ImportCommand extends Command
                 null,
                 null,
                 "Skip the download of assets."
+            )
+            ->addOption(
+                "skip-indices",
+                null,
+                null,
+                "Skip Elasticsearch indices."
             );
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -77,6 +84,7 @@ class ImportCommand extends Command
         $this->input = $input;
         $this->output = $output;
         $skipAssets = $this->input->getOption("skip-assets");
+        $skipIndices = $this->input->getOption("skip-indices");
 
         $this->progressBar = new ProgressBar($this->output, $skipAssets ? 4 : 6);
         $this->progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% <info>%message%</info>');
@@ -84,7 +92,6 @@ class ImportCommand extends Command
         $this->importDirectory = $this->kernelRootDir . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . $input->getArgument("dir") . DIRECTORY_SEPARATOR;
 
         $this->lastFileName = null;
-        $filesArray = [];
 
         foreach (glob($this->importDirectory . '*.sql') as $file) {
             $file = str_replace($this->importDirectory, "", $file);
@@ -107,6 +114,10 @@ class ImportCommand extends Command
 
         if (!$skipAssets) {
             $this->importUploads();
+        }
+
+        if (!$skipIndices) {
+            $this->importIndices();
         }
 
         $this->progressBar->finish();
@@ -184,5 +195,25 @@ class ImportCommand extends Command
             ),
             $output
         );
+    }
+
+    private function importIndices()
+    {
+        $this->progressBar->setMessage("Importing Elasticsearch indices...");
+        $this->executeCommand(
+            "ongr:es:index:drop",
+            [
+                "--force" => true,
+            ],
+            new NullOutput()
+        );
+        $this->executeCommand(
+            "ongr:es:index:import",
+            [
+                "filename" => $this->importDirectory . $this->lastFileName . ".json"
+            ],
+            new NullOutput()
+        );
+        $this->progressBar->advance();
     }
 }

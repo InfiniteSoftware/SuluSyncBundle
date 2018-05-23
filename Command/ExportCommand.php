@@ -77,7 +77,14 @@ class ExportCommand extends Command
                 null,
                 null,
                 "Skip the download of assets."
-            );
+            )
+            ->addOption(
+                "export-indices",
+                null,
+                null,
+                "Export ElasticSearch indices"
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -85,6 +92,7 @@ class ExportCommand extends Command
         $this->input = $input;
         $this->output = $output;
         $exportAssets = $this->input->getOption("export-assets");
+        $exportIndices = $this->input->getOption("export-indices");
 
         $this->progressBar = new ProgressBar($this->output, 3);
         $this->progressBar->setFormat("%current%/%max% [%bar%] %percent:3s%% <info>%message%</info>");
@@ -96,6 +104,10 @@ class ExportCommand extends Command
 
         if ($exportAssets) {
             $this->exportUploads();
+        }
+
+        if ($exportIndices) {
+            $this->exportIndices();
         }
 
         $this->logExport($input->getArgument("export_msg"));
@@ -158,6 +170,19 @@ class ExportCommand extends Command
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
+    }
+
+    private function exportIndices()
+    {
+        $this->progressBar->setMessage("Exporting Elastic Search indices...");
+        $this->executeCommand(
+            "ongr:es:index:export",
+            [
+                "filename" => $this->exportDirectory . DIRECTORY_SEPARATOR . "{$this->timestampString}.json"
+            ]
+        );
+        $this->progressBar->advance();
+
     }
 
     private function logExport($message)
