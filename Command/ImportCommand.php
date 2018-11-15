@@ -58,17 +58,17 @@ class ImportCommand extends Command
     {
         $this
             ->setName("sulu:import")
-            ->setDescription("Imports contents exported with the sulu:export command from the remote host.")
+            ->setDescription("Imports content that was exported previously.")
             ->addArgument(
                 "dir",
                 InputArgument::REQUIRED,
-                "Dir to look for files ti import"
+                "Files import directory"
             )
             ->addOption(
                 "skip-assets",
                 null,
                 null,
-                "Skip the download of assets."
+                "Skip assets downloading"
             )
             ->addOption(
                 "skip-indices",

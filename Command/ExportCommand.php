@@ -60,23 +60,23 @@ class ExportCommand extends Command
     {
         $this
             ->setName("sulu:export")
-            ->setDescription("Exports all Sulu contents (PHPCR, database, uploads) to the chosen project directory.")
-            ->setHelp('This command allows you to export all Sulu contents')
+            ->setDescription("Exports Sulu content (PHPCR, database, uploads) to the chosen project directory.")
+            ->setHelp('This command allows you to export your Sulu content')
             ->addArgument(
                 'dir',
                 InputArgument::REQUIRED,
-                'Dump directory'
+                'Dump export directory'
             )
             ->addArgument(
                 'export_msg',
                 InputArgument::REQUIRED,
-                'Export content message'
+                'Export message'
             )
             ->addOption(
                 "export-assets",
                 null,
                 null,
-                "Skip the download of assets."
+                "Skip assets downloading"
             )
             ->addOption(
                 "export-indices",
@@ -115,7 +115,7 @@ class ExportCommand extends Command
         $this->progressBar->finish();
 
         $this->output->writeln(
-            PHP_EOL . "<info>Successfully exported contents.</info>"
+            PHP_EOL . "<info>Successfully exported content.</info>"
         );
     }
 
